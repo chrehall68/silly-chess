@@ -1,5 +1,6 @@
+#include <algorithm>
 #include <cassert>
-#include <set>
+#include <sstream>
 #include <vector>
 
 #include "chess_board.h"
@@ -8,6 +9,12 @@
 #include "utf8_codepoint.h"
 using namespace std;
 
+// https://en.cppreference.com/w/cpp/error/assert
+#define assertm(condition, message)                                 \
+    {                                                               \
+        if (!static_cast<bool>(condition)) cerr << message << endl; \
+        assert(condition);                                          \
+    }
 // make sure that board.contains really works since we will be using it a lot
 void test_contains(const Board& board) {
     for (int y = 0; y < 8; ++y) {
@@ -24,43 +31,50 @@ void test_make_classical_move(Board& board) {
     board.reset_board();
     for (int y = 0; y < 8; ++y) {
         for (int x = 0; x < 8; ++x) {
-            auto there = board[Cell(x, y)];
+            const ChessPiece* there = &board[Cell(x, y)];
             board.make_classical_chess_move(Move(Cell(x, y), Cell(4, 4)));  // (4, 4) is an arbitrary number
             assert(board[Cell(x, y)] == EMPTY_SPACE);
-            assert(board[Cell(4, 4)] == there);
+            assert(board[Cell(4, 4)] == *there);
             board.reset_board();
         }
-    }
-}
-
-// makes sure that all the moves returned are on the board
-void test_valid_get_moves(const ChessPiece& piece, const Board& board, const Cell& cur_cell) {
-    vector<Move> moves;
-    piece.get_moves(board, cur_cell, moves);
-    for (Move& m : moves) {
-        assert(board.contains(m.to));
     }
 }
 
 Cell operator+(const Cell& c1, const Cell& c2) {
     return Cell(c1.x + c2.x, c1.y + c2.y);
 }
+template <typename T>
+ostream& operator<<(ostream& os, const vector<T> v) {
+    os << "{";
+    for (size_t i = 0; i < v.size(); ++i) {
+        os << v[i];
+        if (i != v.size() - 1) {
+            os << ", ";
+        }
+    }
+    return os << "}";
+}
 // make sure that all the moves returned follow the displacements set by 'directions'
 void test_correct_get_moves(const ChessPiece& piece, const Board& board, const Cell& cur_cell, const vector<Cell>& directions) {
     vector<Move> moves;
     piece.get_moves(board, cur_cell, moves);
-    set<Cell> destinations;  // faster search times
+    vector<Cell> destinations;  // faster search times
 
     // fill destinations
     for (const Move& m : moves) {
-        destinations.insert(m.to);
+        destinations.push_back(m.to);
+        assert(board[m.to].team != piece.team);
+        assert(board.contains(m.to));
     }
 
     // make sure that the destinations are correct moves
     for (const Cell& c : directions) {
         Cell temp(c + cur_cell);
-        if (board.contains(temp)) {
-            assert(destinations.find(temp) != destinations.end());
+        if (board.contains(temp) && board[temp].team != piece.team) {
+            ostringstream err_msg;
+            err_msg << "tried to move " << c.x << " to the right and " << c.y << " up from " << cur_cell << " to end up at " << temp << " but this wasn't found in the outputted destinations."
+                    << "Outputted destinations (by piece.get_moves) are: " << destinations;
+            assertm(std::find(destinations.begin(), destinations.end(), temp) != destinations.end(), err_msg.str());
         }
     }
 }
@@ -68,4 +82,12 @@ void test_correct_get_moves(const ChessPiece& piece, const Board& board, const C
 void test_has_team_name(const ChessPiece& piece) {
     string temp = string(team_name(piece.team));
     assert(temp != "UNKNOWN" && (piece == EMPTY_SPACE || temp != "None"));  // if it is unnamed (unless it's empty space), something is wrong
+}
+
+int main() {
+    Board m;
+    vector<Cell> pawn_moves = {Cell(0, 1)};
+    test_correct_get_moves(m[Cell(0, 1)], m, Cell(0, 1), pawn_moves);
+
+    cout << "all tests passed" << endl;
 }
