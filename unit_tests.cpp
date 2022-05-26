@@ -105,14 +105,14 @@ void test_make_moves(Board& board) {
         int from_y = 9 + rand() % i;
 
         try {
-            board.make_move(Move(Cell(to_x, to_y), Cell(4, 4)));  // this should throw an out of range error
+            board.make_move(Move(Cell(from_x, from_y), Cell(4, 4)));  // this should throw an out of range error
         } catch (out_of_range e) {
             threw_from_error = true;
         }
 
         temp.str("");
         temp.clear();
-        temp << "expected board.make_move to throw an error when trying to move from (" << to_x << ", " << to_y << "), but board.make_move didn't";
+        temp << "expected board.make_move to throw an error when trying to move from (" << from_x << ", " << from_y << "), but board.make_move didn't";
         assertm(threw_from_error, temp.str());
     }
 }
