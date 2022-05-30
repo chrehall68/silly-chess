@@ -87,6 +87,12 @@ class Pawn : public SimpleChessPiece {
     void get_moves(const Board &board, Cell from, vector<Move> &moves) const override;
 };
 
+class Cannon : public SimpleChessPiece {
+   public:
+    Cannon(UTF8CodePoint cp, Team team) : SimpleChessPiece(cp, team){};
+    void get_moves(const Board &board, Cell from, vector<Move> &moves) const override;
+};
+
 // `extern` is used to declare the variables here, without defining them
 // The actual variables/objects are defined in the corresponding .cpp file.
 extern const EmptySpace EMPTY_SPACE;
@@ -102,6 +108,8 @@ extern const Rook WHITE_ROOK;
 extern const Rook BLACK_ROOK;
 extern const Pawn WHITE_PAWN;
 extern const Pawn BLACK_PAWN;
+extern const Cannon WHITE_CANNON;
+extern const Cannon BLACK_CANNON;
 extern const map<UTF8CodePoint, const ChessPiece *> ALL_CHESS_PIECES;
 
 #endif  // _CHESS_PIECES_H_

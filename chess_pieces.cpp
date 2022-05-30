@@ -156,6 +156,58 @@ void Pawn::get_moves(const Board &board, Cell from, vector<Move> &moves) const {
     }
 }
 
+void Cannon::get_moves(const Board &board, Cell from, vector<Move> &moves) const {
+    // The cannon can move similar to a rook (in straight lines)
+    Cell directions[] = {
+        {0, 1},
+        {-1, 0},
+        {1, 0},
+        {0, -1},
+    };
+    vector<Cell> potential_jumpable_directions;
+    for (Cell direction : directions) {
+        for (int steps = 1;; ++steps) {
+            Cell to(from.x + steps * direction.x, from.y + steps * direction.y);
+            if (!board.contains(to)) {
+                break;
+            }
+            const ChessPiece &piece = board[to];
+            if (piece == EMPTY_SPACE) {
+                moves.emplace_back(from, to);
+            } else {
+                potential_jumpable_directions.push_back(direction);
+                break;
+            }
+        }
+    }
+
+    // but can also jump over a piece and hit the next piece in that direction
+    for (Cell direction : potential_jumpable_directions) {
+        Cell to(from.x + direction.x, from.y + direction.y);
+
+        // first, get to the location of the located piece in that direction
+        while (board.contains(to) && board[to] == EMPTY_SPACE) {
+            to.x += direction.x;
+            to.y += direction.y;
+        }
+
+        // then, check to see if there is another piece "behind" that piece that
+        // the cannon can hit
+        to.x += direction.x;
+        to.y += direction.y;
+        while (board.contains(to) && board[to] == EMPTY_SPACE) {
+            to.x += direction.x;
+            to.y += direction.y;
+        }
+
+        // if the piece "behind" that piece is on opposite team, then the cannon
+        // can hit it
+        if (board.contains(to) && is_opposite_team(board[to])) {
+            moves.emplace_back(from, to);
+        }
+    }
+}
+
 const EmptySpace EMPTY_SPACE;
 const King WHITE_KING(U'♔', WHITE);
 const King BLACK_KING(U'♚', BLACK);
@@ -169,6 +221,9 @@ const Rook WHITE_ROOK(U'♖', WHITE);
 const Rook BLACK_ROOK(U'♜', BLACK);
 const Pawn WHITE_PAWN(U'♙', WHITE, 1);
 const Pawn BLACK_PAWN(U'♟', BLACK, -1);
+const Cannon WHITE_CANNON(U'▼', WHITE);
+const Cannon BLACK_CANNON(U'▽', BLACK);
+
 const map<UTF8CodePoint, const ChessPiece *> ALL_CHESS_PIECES = {
     {EMPTY_SPACE.utf8_codepoint, &EMPTY_SPACE},
     {WHITE_KING.utf8_codepoint, &WHITE_KING},
