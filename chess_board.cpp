@@ -9,6 +9,7 @@
 #include "chess_pieces.h"
 #include "utf8_codepoint.h"
 
+using std::cout;
 using std::endl;
 using std::istream;
 using std::map;
@@ -180,4 +181,47 @@ ostream &operator<<(ostream &os, const Board &board) {
     }
     os << "   abcdefgh\n";
     return os;
+}
+
+istream &operator>>(istream &is, Board &board) {
+    size_t num_rows = 0;
+    size_t num_cols = 0;
+
+    // get num cols
+    char c;
+    while (is.get(c)) {
+        if (c == '\n') {
+            break;
+        }
+        if (c != ' ') {
+            ++num_cols;
+        }
+    }
+
+    // get num cols
+    is.get(c);  // get the whitespace
+    is >> num_rows;
+    is.get(c);  // get the wrapping whitespace
+
+    // read the pieces
+    size_t row = 0;
+    while (row < num_rows) {
+        for (size_t col = 0; col < num_cols; ++col) {
+            UTF8CodePoint temp;
+            is >> temp;
+            board.board[num_rows - row - 1][col] = ALL_CHESS_PIECES.at(temp);
+        }
+        // get the whitespace, row number, newline, whitespace, row number, whitespace
+        for (int i = 0; i < 6; ++i) is.get(c);
+        ++row;
+    }
+
+    // read the rest of the board (the bottom stuff)
+    while (is.get(c)) {
+        if (c == '\n') {
+            break;
+        }
+    }
+
+    return is;
 }

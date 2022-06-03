@@ -73,6 +73,7 @@ class Board {
     Team winner() const;
 
     friend ostream& operator<<(ostream& os, const Board& board);
+    friend istream& operator>>(istream& is, Board& board);
 };
 
 #endif  // _CHESS_BOARD_H_
