@@ -208,6 +208,63 @@ void Cannon::get_moves(const Board &board, Cell from, vector<Move> &moves) const
     }
 }
 
+void BombTower::get_moves(const Board &board, Cell from, vector<Move> &moves) const {
+    // tower can move anywhere in a 2 by 2 square
+    for (int x = -2; x <= 2; ++x) {
+        for (int y = -2; y <= 2; ++y) {
+            Cell to(from.x + x, from.y + y);
+            if (board.contains(to) && (board[to] == EMPTY_SPACE || is_opposite_team(board[to]))) {
+                moves.emplace_back(from, to);
+            }
+        }
+    }
+}
+
+void BombTower::make_move(Board &board, Move move) const {
+    if (move.from == move.to) {
+        // explode, killing all items in a 2 by 2 radius
+        // we can't access the board's members directly, so we do workaround
+
+        // first, find the targets that get killed by the blast
+        vector<Cell> targets;
+        for (int x = -2; x <= 2; ++x) {
+            for (int y = -2; y <= 2; ++y) {
+                Cell to(move.from.x + x, move.from.y + y);
+                if (board.contains(to) && is_opposite_team(board[to])) {
+                    targets.push_back(to);
+                }
+            }
+        }
+
+        // find an empty space
+        Cell empty_space_locat;
+        for (int x = 0; x < 8; ++x) {
+            for (int y = 0; y < 8; ++y) {
+                Cell to(x, y);
+                if (board.contains(to) && board[to] == EMPTY_SPACE) {
+                    empty_space_locat = to;
+                    break;
+                }
+            }
+        }
+
+        // then, kill them one by one
+        for (Cell target : targets) {
+            board.make_classical_chess_move(Move(empty_space_locat, target));
+        }
+        board.make_classical_chess_move(Move(empty_space_locat, move.to));
+
+        // make sure it is the correct team's turn
+        if ((targets.size() + 1) % 2 == 0) {
+            board.make_classical_chess_move(Move(empty_space_locat, empty_space_locat));
+        }
+
+    } else {
+        // if not exploding, then just make classical chess move
+        board.make_classical_chess_move(move);
+    }
+}
+
 const EmptySpace EMPTY_SPACE;
 const King WHITE_KING(U'♔', WHITE);
 const King BLACK_KING(U'♚', BLACK);
