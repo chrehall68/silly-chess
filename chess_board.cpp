@@ -85,14 +85,14 @@ void Board::reset_board() {
         board[6][x] = &BLACK_PAWN;
     }
 
-    board[0][0] = &WHITE_BOMBTOWER;
+    board[0][0] = &WHITE_ROOK;
     board[0][1] = &WHITE_KNIGHT;
     board[0][2] = &WHITE_BISHOP;
     board[0][3] = &WHITE_QUEEN;
     board[0][4] = &WHITE_KING;
     board[0][5] = &WHITE_BISHOP;
     board[0][6] = &WHITE_KNIGHT;
-    board[0][7] = &WHITE_BOMBTOWER;
+    board[0][7] = &WHITE_ROOK;
 
     board[7][0] = &BLACK_ROOK;
     board[7][1] = &BLACK_KNIGHT;
