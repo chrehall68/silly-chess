@@ -213,7 +213,7 @@ void BombTower::get_moves(const Board &board, Cell from, vector<Move> &moves) co
     for (int x = -2; x <= 2; ++x) {
         for (int y = -2; y <= 2; ++y) {
             Cell to(from.x + x, from.y + y);
-            if (board.contains(to) && (board[to] == EMPTY_SPACE || is_opposite_team(board[to]))) {
+            if (board.contains(to) && (board[to] == EMPTY_SPACE || is_opposite_team(board[to])) || to == from) {
                 moves.emplace_back(from, to);
             }
         }
@@ -278,8 +278,10 @@ const Rook WHITE_ROOK(U'♖', WHITE);
 const Rook BLACK_ROOK(U'♜', BLACK);
 const Pawn WHITE_PAWN(U'♙', WHITE, 1);
 const Pawn BLACK_PAWN(U'♟', BLACK, -1);
-const Cannon WHITE_CANNON(U'▼', WHITE);
-const Cannon BLACK_CANNON(U'▽', BLACK);
+const Cannon WHITE_CANNON(U'▽', WHITE);
+const Cannon BLACK_CANNON(U'▼', BLACK);
+const BombTower WHITE_BOMBTOWER(U'☆', WHITE);
+const BombTower BLACK_BOMBTOWER(U'★', BLACK);
 
 const map<UTF8CodePoint, const ChessPiece *> ALL_CHESS_PIECES = {
     {EMPTY_SPACE.utf8_codepoint, &EMPTY_SPACE},
@@ -295,4 +297,8 @@ const map<UTF8CodePoint, const ChessPiece *> ALL_CHESS_PIECES = {
     {BLACK_ROOK.utf8_codepoint, &BLACK_ROOK},
     {WHITE_PAWN.utf8_codepoint, &WHITE_PAWN},
     {BLACK_PAWN.utf8_codepoint, &BLACK_PAWN},
+    {WHITE_CANNON.utf8_codepoint, &WHITE_CANNON},
+    {BLACK_CANNON.utf8_codepoint, &BLACK_CANNON},
+    {WHITE_BOMBTOWER.utf8_codepoint, &WHITE_BOMBTOWER},
+    {BLACK_BOMBTOWER.utf8_codepoint, &BLACK_BOMBTOWER},
 };

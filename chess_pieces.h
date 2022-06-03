@@ -117,6 +117,8 @@ extern const Pawn WHITE_PAWN;
 extern const Pawn BLACK_PAWN;
 extern const Cannon WHITE_CANNON;
 extern const Cannon BLACK_CANNON;
+extern const BombTower WHITE_BOMBTOWER;
+extern const BombTower BLACK_BOMBTOWER;
 extern const map<UTF8CodePoint, const ChessPiece *> ALL_CHESS_PIECES;
 
 #endif  // _CHESS_PIECES_H_
