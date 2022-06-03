@@ -213,7 +213,7 @@ void BombTower::get_moves(const Board &board, Cell from, vector<Move> &moves) co
     for (int x = -2; x <= 2; ++x) {
         for (int y = -2; y <= 2; ++y) {
             Cell to(from.x + x, from.y + y);
-            if (board.contains(to) && (board[to] == EMPTY_SPACE || is_opposite_team(board[to])) || to == from) {
+            if (board.contains(to) && (board[to] == EMPTY_SPACE || is_opposite_team(board[to]) || to == from)) {
                 moves.emplace_back(from, to);
             }
         }
@@ -237,7 +237,7 @@ void BombTower::make_move(Board &board, Move move) const {
         }
 
         // find an empty space
-        Cell empty_space_locat;
+        Cell empty_space_locat(0, 0);
         for (int x = 0; x < 8; ++x) {
             for (int y = 0; y < 8; ++y) {
                 Cell to(x, y);
