@@ -210,8 +210,7 @@ ostream &operator<<(ostream &os, const Board &board) {
         for (int x = 0; x < static_cast<int>(board.width); ++x) {
             os << board[Cell(x, y)];
         }
-        os << ' ' << (y + 1) << ' ';
-        os << endl;
+        os << ' ' << (y + 1) << endl;
     }
     os << "   " << ((board.height + 1) / 10 > 0 ? " " : "");
     for (size_t i = 0; i < board.width; ++i) {
@@ -256,10 +255,12 @@ istream &operator>>(istream &is, Board &board) {
         }
         // get the whitespace, row number, newline, whitespace, row number, whitespace
         for (int i = 0; i < 2; ++i) {
-            int temp;
-            is.get(c);
-            is >> temp;
-            is.get(c);
+            if (!(row==num_rows-1 && i==1)) {
+                int temp;
+                is.get(c);
+                is >> temp;
+                is.get(c);
+            }
         }
 
         ++row;

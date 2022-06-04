@@ -60,23 +60,28 @@ int main(int argc, const char *argv[]) {
     // cout << "BLACK won " << win_counts[1] << endl;
     // cout << "WHITE won " << win_counts[2] << endl;
 
-    // Board b(10, 10);
-    // HumanPlayer white_player(WHITE);
-    // CapturePlayer black_player(BLACK);
+    Board b(10, 10);
+    CapturePlayer white_player(WHITE);
+    CapturePlayer black_player(BLACK);
 
-    // play_chess_one_turn(b, white_player);
+    play_chess_one_turn(b, white_player);
 
-    // ofstream out("./out.txt");
-    // out << b;
-    // out.close();
+    ofstream out("./out.txt");
+    out << b;
+
+    Board c(4, 99);
+    play_chess_one_turn(c, white_player);
+    out << c;
+    out.close();
 
     ifstream in("./out.txt");
     Board b1;
     in >> b1;
     cout << b1 << endl;
-    // Board b2;
-    // in >> b2;
-    // cout << b2 << endl;
+
+    Board b2;
+    in >> b2;
+    cout << b2 << endl;
 
     // HumanPlayer white_player(WHITE);
     // CapturePlayer black_player(BLACK);
