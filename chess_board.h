@@ -49,11 +49,17 @@ ostream& operator<<(ostream& os, const Move& move);
 istream& operator>>(istream& is, Move& move);
 
 class Board {
-    const ChessPiece* board[8][8];
+    size_t width, height;
+    vector<vector<const ChessPiece*>> board;
     Team current_teams_turn;
+    void resize_board();
 
    public:
-    Board();
+    Board(size_t width = 8, size_t height = 8);
+
+    const size_t get_width() const;
+    const size_t get_height() const;
+
     const ChessPiece& operator[](Cell cell) const;
     // Reset all the pieces on the board (as if you're starting a new game).
     void reset_board();

@@ -238,10 +238,10 @@ void BombTower::make_move(Board &board, Move move) const {
 
         // find an empty space
         Cell empty_space_locat(0, 0);
-        for (int x = 0; x < 8; ++x) {
-            for (int y = 0; y < 8; ++y) {
+        for (size_t x = 0; x < board.get_width(); ++x) {
+            for (size_t y = 0; y < board.get_height(); ++y) {
                 Cell to(x, y);
-                if (board.contains(to) && board[to] == EMPTY_SPACE) {
+                if (board[to] == EMPTY_SPACE) {
                     empty_space_locat = to;
                     break;
                 }

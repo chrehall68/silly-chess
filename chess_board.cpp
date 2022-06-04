@@ -1,5 +1,7 @@
 #include "chess_board.h"
 
+#include <cassert>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -9,14 +11,23 @@
 #include "chess_pieces.h"
 #include "utf8_codepoint.h"
 
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::istream;
 using std::map;
 using std::ostream;
 using std::out_of_range;
+using std::setw;
 using std::stringstream;
 using std::vector;
+
+// https://en.cppreference.com/w/cpp/error/assert
+#define assertm(condition, message)                                 \
+    {                                                               \
+        if (!static_cast<bool>(condition)) cerr << message << endl; \
+        assert(condition);                                          \
+    }
 
 const char *team_name(Team team) {
     switch (team) {
@@ -65,8 +76,21 @@ istream &operator>>(istream &is, Move &move) {
     return is >> move.from >> move.to;
 }
 
-Board::Board() {
+Board::Board(size_t width, size_t height) : width(width), height(height) {
+    assertm(width >= 2 && width <= 26, "width must be between 2 and 26 (inclusive)");
+    assertm(height >= 2 && height <= 99, "height must be between 2 and 99 (inclusive)");
     reset_board();
+}
+
+void Board::resize_board() {
+    board.clear();
+
+    for (size_t y = 0; y < height; ++y) {
+        board.push_back({});  // push an empty vector
+        for (size_t x = 0; x < width; ++x) {
+            board[y].push_back(&EMPTY_SPACE);
+        }
+    }
 }
 
 const ChessPiece &Board::operator[](Cell cell) const {
@@ -74,42 +98,46 @@ const ChessPiece &Board::operator[](Cell cell) const {
 }
 
 void Board::reset_board() {
-    for (int y = 0; y < 8; ++y) {
-        for (int x = 0; x < 8; ++x) {
-            board[y][x] = &EMPTY_SPACE;
+    resize_board();
+
+    if (board.size() >= 4) {
+        for (size_t x = 0; x < width; ++x) {
+            board[1][x] = &WHITE_PAWN;
+            board[board.size() - 2][x] = &BLACK_PAWN;
         }
     }
 
-    for (int x = 0; x < 8; ++x) {
-        board[1][x] = &WHITE_PAWN;
-        board[6][x] = &BLACK_PAWN;
+    // important pieces first
+    board[0][board[0].size() / 2] = &WHITE_KING;
+    board[board.size() - 1][board[0].size() / 2] = &BLACK_KING;
+    board[0][board[0].size() / 2 - 1] = &WHITE_QUEEN;
+    board[board.size() - 1][board[0].size() / 2 - 1] = &BLACK_QUEEN;
+
+    // other pieces, if have space
+    vector<vector<const ChessPiece *>> importances = {{&WHITE_BISHOP, &BLACK_BISHOP}, {&WHITE_KNIGHT, &BLACK_KNIGHT}, {&WHITE_ROOK, &BLACK_ROOK}};
+    for (size_t i = 0; i < importances.size(); ++i) {
+        size_t xpos1 = board[0].size() / 2 + i + 1;
+        if (xpos1 >= board[0].size()) {
+            break;
+        }
+        board[0][xpos1] = importances[i][0];
+        board[board.size() - 1][xpos1] = importances[i][1];
+
+        int xpos2 = board[0].size() / 2 - 1 - i - 1;
+        if (xpos2 < 0) {
+            break;
+        }
+        board[0][xpos2] = importances[i][0];
+        board[board.size() - 1][xpos2] = importances[i][1];
     }
-
-    board[0][0] = &WHITE_ROOK;
-    board[0][1] = &WHITE_KNIGHT;
-    board[0][2] = &WHITE_BISHOP;
-    board[0][3] = &WHITE_QUEEN;
-    board[0][4] = &WHITE_KING;
-    board[0][5] = &WHITE_BISHOP;
-    board[0][6] = &WHITE_KNIGHT;
-    board[0][7] = &WHITE_ROOK;
-
-    board[7][0] = &BLACK_ROOK;
-    board[7][1] = &BLACK_KNIGHT;
-    board[7][2] = &BLACK_BISHOP;
-    board[7][3] = &BLACK_QUEEN;
-    board[7][4] = &BLACK_KING;
-    board[7][5] = &BLACK_BISHOP;
-    board[7][6] = &BLACK_KNIGHT;
-    board[7][7] = &BLACK_ROOK;
 
     current_teams_turn = WHITE;
 }
 
 vector<Move> Board::get_moves() const {
     vector<Move> moves;
-    for (int y = 0; y < 8; ++y) {
-        for (int x = 0; x < 8; ++x) {
+    for (size_t y = 0; y < height; ++y) {
+        for (size_t x = 0; x < width; ++x) {
             if (board[y][x]->team == current_teams_turn) {
                 board[y][x]->get_moves(*this, Cell(x, y), moves);
             }
@@ -147,13 +175,13 @@ void Board::make_move(Move move) {
 }
 
 bool Board::contains(Cell cell) const {
-    return cell.x >= 0 && cell.x < 8 && cell.y >= 0 && cell.y < 8;
+    return cell.x >= 0 && cell.x < static_cast<int>(width) && cell.y >= 0 && cell.y < static_cast<int>(height);
 }
 
 Team Board::winner() const {
     bool found_white_king = false, found_black_king = false;
-    for (int y = 0; y < 8; ++y) {
-        for (int x = 0; x < 8; ++x) {
+    for (size_t y = 0; y < height; ++y) {
+        for (size_t x = 0; x < width; ++x) {
             if (board[y][x] == &WHITE_KING) {
                 found_white_king = true;
             } else if (board[y][x] == &BLACK_KING) {
@@ -171,15 +199,25 @@ Team Board::winner() const {
 }
 
 ostream &operator<<(ostream &os, const Board &board) {
-    os << "   abcdefgh\n";
-    for (int y = 7; y >= 0; --y) {
-        os << ' ' << (y + 1) << ' ';
-        for (int x = 0; x < 8; ++x) {
+    os << "   " << ((board.height + 1) / 10 > 0 ? " " : "");
+    for (size_t i = 0; i < board.width; ++i) {
+        os << static_cast<char>('a' + i);
+    }
+    os << "\n";
+
+    for (int y = board.height - 1; y >= 0; --y) {
+        os << ' ' << ((y + 1) / 10 > 0 ? "" : " ") << (y + 1) << ' ';
+        for (int x = 0; x < static_cast<int>(board.width); ++x) {
             os << board[Cell(x, y)];
         }
-        os << ' ' << (y + 1) << endl;
+        os << ' ' << (y + 1) << ' ';
+        os << endl;
     }
-    os << "   abcdefgh\n";
+    os << "   " << ((board.height + 1) / 10 > 0 ? " " : "");
+    for (size_t i = 0; i < board.width; ++i) {
+        os << static_cast<char>('a' + i);
+    }
+    os << "\n";
     return os;
 }
 
@@ -201,7 +239,12 @@ istream &operator>>(istream &is, Board &board) {
     // get num cols
     is.get(c);  // get the whitespace
     is >> num_rows;
-    is.get(c);  // get the wrapping whitespace
+    is.get(c);
+
+    // set the board's stuff
+    board.width = num_cols;
+    board.height = num_rows;
+    board.resize_board();
 
     // read the pieces
     size_t row = 0;
@@ -212,7 +255,13 @@ istream &operator>>(istream &is, Board &board) {
             board.board[num_rows - row - 1][col] = ALL_CHESS_PIECES.at(temp);
         }
         // get the whitespace, row number, newline, whitespace, row number, whitespace
-        for (int i = 0; i < 6; ++i) is.get(c);
+        for (int i = 0; i < 2; ++i) {
+            int temp;
+            is.get(c);
+            is >> temp;
+            is.get(c);
+        }
+
         ++row;
     }
 
@@ -224,4 +273,12 @@ istream &operator>>(istream &is, Board &board) {
     }
 
     return is;
+}
+
+const size_t Board::get_height() const {
+    return height;
+}
+
+const size_t Board::get_width() const {
+    return width;
 }
