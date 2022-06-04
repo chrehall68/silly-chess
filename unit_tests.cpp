@@ -20,7 +20,7 @@ using namespace std;
 void test_contains(const Board& board) {
     for (int y = -10; y < 10; ++y) {
         for (int x = -10; x < 10; ++x) {
-            bool expected = x >= 0 && x < 8 && y >= 0 && y < 8;
+            bool expected = x >= 0 && x < static_cast<int>(board.get_width()) && y >= 0 && y < static_cast<int>(board.get_height());
             try {
                 ostringstream temp;
                 temp << "expected the board to contain " << Cell(x, y) << " but it didn't contain it";
@@ -38,8 +38,8 @@ void test_contains(const Board& board) {
 // tests occasions that will never happen as well
 void test_make_classical_chess_move(Board& board) {
     board.reset_board();
-    for (int y = 0; y < 8; ++y) {
-        for (int x = 0; x < 8; ++x) {
+    for (size_t y = 0; y < board.get_height(); ++y) {
+        for (size_t x = 0; x < board.get_width(); ++x) {
             const ChessPiece* there = &board[Cell(x, y)];
             board.make_classical_chess_move(Move(Cell(x, y), Cell(4, 4)));  // (4, 4) is an arbitrary number
             assert(board[Cell(x, y)] == EMPTY_SPACE);
@@ -87,8 +87,8 @@ void test_make_moves(Board& board) {
     for (int i = 1; i < 10; ++i) {
         // to tests
         bool threw_to_error = false;
-        int to_x = 9 + rand() % i;
-        int to_y = 9 + rand() % i;
+        int to_x = board.get_width() + 1 + rand() % i;
+        int to_y = board.get_height() + 1 + rand() % i;
         try {
             board.make_move(Move(Cell(0, 0), Cell(to_x, to_y)));  // this should throw an out of range error
         } catch (out_of_range e) {
@@ -101,8 +101,8 @@ void test_make_moves(Board& board) {
 
         // from tests
         bool threw_from_error = false;
-        int from_x = 9 + rand() % i;
-        int from_y = 9 + rand() % i;
+        int from_x = board.get_width() + 1 + rand() % i;
+        int from_y = board.get_height() + 1 + rand() % i;
 
         try {
             board.make_move(Move(Cell(from_x, from_y), Cell(4, 4)));  // this should throw an out of range error
@@ -167,8 +167,8 @@ void test_winner(Board& board) {
 
         Team actual_winner = NONE;
         bool found_white_king = false, found_black_king = false;
-        for (int y = 0; y < 8; ++y) {
-            for (int x = 0; x < 8; ++x) {
+        for (size_t y = 0; y < board.get_height(); ++y) {
+            for (size_t x = 0; x < board.get_width(); ++x) {
                 if (&board[Cell(x, y)] == &WHITE_KING) {
                     if (i != 1) {
                         found_white_king = true;
