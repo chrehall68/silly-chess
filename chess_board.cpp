@@ -199,20 +199,20 @@ Team Board::winner() const {
 }
 
 ostream &operator<<(ostream &os, const Board &board) {
-    os << "   " << ((board.height + 1) / 10 > 0 ? " " : "");
+    os << "   ";
     for (size_t i = 0; i < board.width; ++i) {
         os << static_cast<char>('a' + i);
     }
     os << "\n";
 
     for (int y = board.height - 1; y >= 0; --y) {
-        os << ' ' << ((y + 1) / 10 > 0 ? "" : " ") << (y + 1) << ' ';
+        os << ((y + 1) / 10 > 0 ? "" : " ") << (y + 1) << ' ';
         for (int x = 0; x < static_cast<int>(board.width); ++x) {
             os << board[Cell(x, y)];
         }
         os << ' ' << (y + 1) << endl;
     }
-    os << "   " << ((board.height + 1) / 10 > 0 ? " " : "");
+    os << "   ";
     for (size_t i = 0; i < board.width; ++i) {
         os << static_cast<char>('a' + i);
     }
@@ -236,7 +236,6 @@ istream &operator>>(istream &is, Board &board) {
     }
 
     // get num cols
-    is.get(c);  // get the whitespace
     is >> num_rows;
     is.get(c);
 
@@ -255,9 +254,8 @@ istream &operator>>(istream &is, Board &board) {
         }
         // get the whitespace, row number, newline, whitespace, row number, whitespace
         for (int i = 0; i < 2; ++i) {
-            if (!(row==num_rows-1 && i==1)) {
+            if (!(row == num_rows - 1 && i == 1)) {
                 int temp;
-                is.get(c);
                 is >> temp;
                 is.get(c);
             }
