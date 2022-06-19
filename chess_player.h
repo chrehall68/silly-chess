@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "chess_board.h"
+#include "chess_pieces.h"
 
 using std::vector;
 
@@ -49,6 +50,30 @@ class CheckMateCapturePlayer : public Player {
    public:
     CheckMateCapturePlayer(Team team);
     Move get_move(const Board &board, const vector<Move> &moves) const override;
+};
+
+class AIPlayer : public Player {
+   public:
+    AIPlayer(Team team);
+    Move get_move(const Board &board, const vector<Move> &moves) const override;
+
+   private:
+    vector<int> minimax(const Board &board, const vector<Move> &moves, int depth, Team cur_team) const;
+    const int king_weight = 100;
+    const int custom_weight = 5;
+    const map<const ChessPiece *, int> weights = {
+        {&WHITE_PAWN, 1},
+        {&BLACK_PAWN, 1},
+        {&WHITE_KNIGHT, 3},
+        {&BLACK_KNIGHT, 3},
+        {&WHITE_BISHOP, 3},
+        {&BLACK_BISHOP, 3},
+        {&WHITE_ROOK, 5},
+        {&BLACK_ROOK, 5},
+        {&WHITE_QUEEN, 9},
+        {&BLACK_QUEEN, 9},
+        {&WHITE_KING, king_weight},
+        {&BLACK_KING, king_weight}};
 };
 
 #endif  // _CHESS_PLAYER_H_
